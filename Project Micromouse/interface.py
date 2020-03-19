@@ -16,10 +16,11 @@ margin = 10 # we are defining margin to keep maze a bit away from edge
 
 grid_size = 16
 cell_size = 35
+dashboardsize = 300
 
 border_size = 6
 
-display_width = 641+cell_size+border_size
+display_width = 641+cell_size+border_size+dashboardsize
 display_height = 641+cell_size+border_size
 
 win = pygame.display.set_mode((display_width,display_height))
@@ -68,12 +69,13 @@ class edge(object):
 ##
 # Making user defined pygame_functions
 
-def draw_edge(position):
+def draw_edge(position, type):
     #global fhand
     mousedown = True
     pos = position
     old_pos = position
     postoggle = True
+    buttontype = type
     while mousedown:
         for event in pygame.event.get():
             #print(event)
@@ -86,6 +88,12 @@ def draw_edge(position):
             #         pos = -1
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    buttontype = 1
+                    mousedown = True
+                    postoggle = True
+                    pos = event.pos
+                if event.button == 3:
+                    buttontype = 3
                     mousedown = True
                     postoggle = True
                     pos = event.pos
@@ -97,26 +105,41 @@ def draw_edge(position):
                     mousedown = False
                     postoggle = False
                     break
+                if event.button == 3:
+                    mousedown = False
+                    postoggle = False
+                    break
         #print(pos)
         #if pos != old_pos:
             # We are getting required position here
-        x_pos = pos[0]
-        y_pos = pos[1]
-        for iids in iidlist:
-            specedge = edges[iids]
-            for ed in specedge:
-                if x_pos <= ed.x_upper_bound and x_pos >= ed.x_lower_bound and y_pos >= ed.y_lower_bound and y_pos <= ed.y_upper_bound:
-                    #print(pos)
-                    #print(iid)
-                    #fhand.write(str(iids)+"\n")
-                    ed.color = black
-                    pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
-                    pygame.display.update()
-                else:
-                    #print(pos)
-                    pass
+        if buttontype == 1:
+            x_pos = pos[0]
+            y_pos = pos[1]
+            for iids in iidlist:
+                specedge = edges[iids]
+                for ed in specedge:
+                    if x_pos <= ed.x_upper_bound and x_pos >= ed.x_lower_bound and y_pos >= ed.y_lower_bound and y_pos <= ed.y_upper_bound:
+                        #print(pos)
+                        #print(iid)
+                        #fhand.write(str(iids)+"\n")
+                        ed.color = black
+                        pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
+                        pygame.display.update()
+        elif buttontype == 3:
+            x_pos = pos[0]
+            y_pos = pos[1]
+            for iids in iidlist:
+                specedge = edges[iids]
+                for ed in specedge:
+                    if x_pos <= ed.x_upper_bound and x_pos >= ed.x_lower_bound and y_pos >= ed.y_lower_bound and y_pos <= ed.y_upper_bound:
+                        #print(pos)
+                        #print(iid)
+                        #fhand.write(str(iids)+"\n")
+                        ed.color = lightgreen
+                        pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
+                        pygame.display.update()
 
-            #old_pos = pos
+
 
 
 
@@ -181,7 +204,9 @@ while not gameExit:
                 gameExit = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                draw_edge (event.pos)
+                draw_edge (event.pos,1)
+            if event.button == 3:
+                draw_edge (event.pos,3)
 
 
 
