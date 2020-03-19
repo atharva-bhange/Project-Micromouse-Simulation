@@ -1,6 +1,8 @@
 import pygame
 import time
 import numpy as np
+import pygame_functions as pf
+import json
 
 white = (255,255,255)
 black = (0,0,0)
@@ -40,7 +42,7 @@ class cell(object):
         self.color = color
 
 class edge(object):
-    def __init__(self,pos, x_cor,y_cor,state,color = black):
+    def __init__(self,pos, x_cor,y_cor,state,color = lightgreen):
         global border_size
         global cell_size
         self.pos = pos
@@ -49,11 +51,75 @@ class edge(object):
         self.state = state
         self.color = color
         if self.state == "H":
-            self.width = cell_size
+            self.width = cell_size+(border_size)*2
             self.height = border_size
+            self.x_lower_bound = self.x_cor + border_size
+            self.x_upper_bound = self.x_cor +border_size+ cell_size
+            self.y_lower_bound = self.y_cor
+            self.y_upper_bound = self.y_cor + border_size
         elif self.state == "V":
             self.width = border_size
             self.height = cell_size+(border_size*2)
+            self.x_lower_bound = self.x_cor
+            self.x_upper_bound = self.x_cor + border_size
+            self.y_lower_bound = self.y_cor + border_size
+            self.y_upper_bound = self.y_cor + border_size + cell_size
+
+##
+# Making user defined pygame_functions
+
+def draw_edge(position):
+    global fhand
+    mousedown = True
+    pos = position
+    old_pos = position
+    postoggle = True
+    while mousedown:
+        for event in pygame.event.get():
+            #print(event)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            # if event.type == pygame.ACTIVEEVENT:
+            #     if event.gain == 0 :
+            #         postoggle = False
+            #         pos = -1
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mousedown = True
+                    postoggle = True
+                    pos = event.pos
+            if postoggle:
+                if event.type == pygame.MOUSEMOTION:
+                    pos = event.pos
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    mousedown = False
+                    postoggle = False
+                    break
+
+        #if pos != old_pos:
+            # We are getting required position here
+        x_pos = pos[0]
+        y_pos = pos[1]
+        for iids in iidlist:
+            specedge = edges[iids]
+            for ed in specedge:
+                if x_pos <= ed.x_upper_bound and x_pos >= ed.x_lower_bound and y_pos >= ed.y_lower_bound and y_pos <= ed.y_upper_bound:
+                    #print(pos)
+                    #print(iid)
+                    fhand.write(str(iids)+"\n")
+                    ed.color = black
+                    pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
+                    pygame.display.update()
+                else:
+                    #print(pos)
+                    pass
+
+            #old_pos = pos
+
+
+
 ##
 '''
 cells = np.zeros((grid_size,grid_size) , dtype = int)
@@ -65,8 +131,8 @@ edges = dict()
 #chart = ['up','right','down','left']
 #state = {"up" : "H" , "down" : "H" , "left" : "V" , "right" : "V"}
 cells = []
-
-fhand = open("log.txt", 'a')
+iidlist = []
+fhand = open("log.txt", 'w')
 
 cursory = margin
 for row in range(grid_size):
@@ -79,34 +145,44 @@ for row in range(grid_size):
         pygame.draw.rect(win ,cells[row][column].color ,[cells[row][column].x_cor , cells[row][column].y_cor , cells[row][column].width , cells[row][column].height])
 
         edges[iid] = []
-
-        edges[iid].append(edge("up",cursorx+border_size, cursory,"H")) #upper edge
+        iidlist.append(iid)
+        edges[iid].append(edge("up",cursorx, cursory,"H")) #upper edge
         edges[iid].append(edge("right",cursorx+cell_size+border_size,cursory,"V")) # right edge
-        edges[iid].append(edge("down",cursorx+border_size,cursory+border_size+cell_size,"H")) # bottom edge
+        edges[iid].append(edge("down",cursorx,cursory+border_size+cell_size,"H")) # bottom edge
         edges[iid].append(edge("left",cursorx,cursory,"V")) # left edge
         for l in range(4):
             #fhand.write(str(edges[iid][l].x_cor)+" "+str(edges[iid][l].y_cor)+" "+str(edges[iid][l].width)+" "+str(edges[iid][l].height))
             #fhand.write("\n")
             #print(edges[iid][l].color,edges[iid][l].x_cor,edges[iid][l].y_cor,edges[iid][l].width,edges[iid][l].height)
             pygame.draw.rect(win,edges[iid][l].color,[edges[iid][l].x_cor,edges[iid][l].y_cor,edges[iid][l].width,edges[iid][l].height])
-
-
         cursorx += cell_size+border_size
     cursory += cell_size + border_size
+print(iidlist)
+#print(edges)
 pygame.display.update()
-print("done")
+##
+
+for t in range(4):
+    print(edges["00"][t].x_cor,edges["00"][t].y_cor )
+
+
 while not gameExit:
 
 
     for event in pygame.event.get():
+        #print(event)
         if event.type == pygame.QUIT:
             gameExit = True
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 gameExit = True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                draw_edge (event.pos)
 
 
-    #pygame.display.update()
+
+    pygame.display.update()
 
 pygame.quit()
 quit()
