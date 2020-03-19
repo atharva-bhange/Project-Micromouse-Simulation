@@ -69,7 +69,7 @@ class edge(object):
 # Making user defined pygame_functions
 
 def draw_edge(position):
-    global fhand
+    #global fhand
     mousedown = True
     pos = position
     old_pos = position
@@ -97,7 +97,7 @@ def draw_edge(position):
                     mousedown = False
                     postoggle = False
                     break
-
+        #print(pos)
         #if pos != old_pos:
             # We are getting required position here
         x_pos = pos[0]
@@ -108,7 +108,7 @@ def draw_edge(position):
                 if x_pos <= ed.x_upper_bound and x_pos >= ed.x_lower_bound and y_pos >= ed.y_lower_bound and y_pos <= ed.y_upper_bound:
                     #print(pos)
                     #print(iid)
-                    fhand.write(str(iids)+"\n")
+                    #fhand.write(str(iids)+"\n")
                     ed.color = black
                     pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
                     pygame.display.update()
@@ -132,14 +132,14 @@ edges = dict()
 #state = {"up" : "H" , "down" : "H" , "left" : "V" , "right" : "V"}
 cells = []
 iidlist = []
-fhand = open("log.txt", 'w')
+#fhand = open("log.txt", 'w')
 
 cursory = margin
 for row in range(grid_size):
     cursorx = margin
     cells.append([])
     for column in range(grid_size):
-        iid = str(row)+str(column)
+        iid = str(row)+"-"+str(column)
         cells[row].append(cell(iid, cursorx+border_size,cursory+border_size))
         #print(cells[row][column].color,cells[row][column].x_cor ,cells[row][column].y_cor ,cells[row][column].width,cells[row][column].height )
         pygame.draw.rect(win ,cells[row][column].color ,[cells[row][column].x_cor , cells[row][column].y_cor , cells[row][column].width , cells[row][column].height])
@@ -157,13 +157,16 @@ for row in range(grid_size):
             pygame.draw.rect(win,edges[iid][l].color,[edges[iid][l].x_cor,edges[iid][l].y_cor,edges[iid][l].width,edges[iid][l].height])
         cursorx += cell_size+border_size
     cursory += cell_size + border_size
-print(iidlist)
+#print(iidlist)
 #print(edges)
 pygame.display.update()
 ##
-
-for t in range(4):
-    print(edges["00"][t].x_cor,edges["00"][t].y_cor )
+#
+# for t in range(4):
+#     print(edges["111"][t].x_lower_bound,edges["111"][t].x_upper_bound,edges["111"][t].y_lower_bound,edges["111"][t].y_upper_bound )
+# print("---")
+# for t in range(4):
+#     print(edges["110"][t].x_lower_bound,edges["110"][t].x_upper_bound,edges["110"][t].y_lower_bound,edges["110"][t].y_upper_bound )
 
 
 while not gameExit:
