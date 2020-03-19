@@ -102,7 +102,7 @@ while not gameExit:
         if event.type == pygame.QUIT:
             gameExit = True
         if event.type == pygame.KEYDOWN:
-            if event.keys == pygame.K_ESCAPE:
+            if event.key == pygame.K_ESCAPE:
                 gameExit = True
 
 
