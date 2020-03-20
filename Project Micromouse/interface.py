@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pygame_functions as pf
 import json
+import pickle
 
 white = (255,255,255)
 black = (0,0,0)
@@ -183,6 +184,7 @@ for row in range(grid_size):
 #print(iidlist)
 #print(edges)
 pygame.display.update()
+
 ##
 #
 # for t in range(4):
@@ -192,11 +194,39 @@ pygame.display.update()
 #     print(edges["110"][t].x_lower_bound,edges["110"][t].x_upper_bound,edges["110"][t].y_lower_bound,edges["110"][t].y_upper_bound )
 
 
+
+# Drawing edges from default.pickle
+drawdefault = True
+try:
+    defaulthandle = open("default.pickle" , "rb")
+    #print("reading default")
+except:
+    print("Default pickle file not found.")
+    drawdefault = False
+
+if drawdefault:
+    #print("Drawing Default")
+    default_data = pickle.load(defaulthandle)
+    iidlist =  default_data[0]
+    cells = default_data[1]
+    edges = default_data[2]
+    for defaultids in default_data[0]:
+        default_edge_info = default_data[2][defaultids]
+        for each_default_edge in default_edge_info:
+            if each_default_edge.color == black:
+                #print("punch")
+                pygame.draw.rect(win,each_default_edge.color,[each_default_edge.x_cor,each_default_edge.y_cor,each_default_edge.width,each_default_edge.height])
+                pygame.display.update()
+
+    defaulthandle.close()
+
+##
+
+
+# Simulation Loop
+
 while not gameExit:
-
-
     for event in pygame.event.get():
-        #print(event)
         if event.type == pygame.QUIT:
             gameExit = True
         if event.type == pygame.KEYDOWN:
@@ -211,6 +241,17 @@ while not gameExit:
 
 
     pygame.display.update()
+# pickle_data = []
+# pickle_data.append(iidlist)
+# pickle_data.append(cells)
+# pickle_data.append(edges)
+#
+# fhand = open("default.pickle" , "wb")
+# pickle.dump(pickle_data,fhand)
+# fhand.close()
 
+# fhand = open("default2.pickle" , "rb")
+# pickle_data = pickle.load(fhand)
+# print(pickle_data[0][11][11].id)
 pygame.quit()
 quit()
