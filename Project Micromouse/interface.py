@@ -1,7 +1,7 @@
 import pygame
 import time
 import numpy as np
-import pygame_functions as pf
+from pygame_functions import *
 import json
 import pickle
 
@@ -10,6 +10,7 @@ black = (0,0,0)
 lightblue = (173, 216, 230)
 lightgreen = (144,238,144)
 
+y_shift = 0
 x = pygame.init()
 
 # Initializing all constant values
@@ -24,8 +25,10 @@ border_size = 6
 display_width = 641+cell_size+border_size+dashboardsize
 display_height = 641+cell_size+border_size
 
-win = pygame.display.set_mode((display_width,display_height))
 
+win = pygame.display.set_mode((display_width,display_height))
+#screenSize(display_width,display_height)
+# screen = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("Simulation Interface")
 
 gameExit = False
@@ -198,7 +201,7 @@ pygame.display.update()
 # Drawing edges from default.pickle
 drawdefault = True
 try:
-    defaulthandle = open("default.pickle" , "rb")
+    defaulthandle = open("mapfile/default.pickle" , "rb")
     #print("reading default")
 except:
     print("Default pickle file not found.")
@@ -221,6 +224,9 @@ if drawdefault:
     defaulthandle.close()
 
 ##
+# wordbox = makeTextBox(display_width - dashboardsize, display_height/2,dashboardsize)
+# showTextBox(wordbox)
+# entry = textBoxInput(wordbox)
 
 
 # Simulation Loop
@@ -237,6 +243,11 @@ while not gameExit:
                 draw_edge (event.pos,1)
             if event.button == 3:
                 draw_edge (event.pos,3)
+    # wordbox = makeTextBox(display_width - dashboardsize, display_height/2,dashboardsize)
+    # showTextBox(wordbox)
+    # entry = textBoxInput(wordbox)
+
+
 
 
 
