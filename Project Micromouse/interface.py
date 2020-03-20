@@ -1,7 +1,6 @@
 import pygame
 import time
 import numpy as np
-from pygame_functions import *
 import json
 import pickle
 
@@ -9,6 +8,8 @@ white = (255,255,255)
 black = (0,0,0)
 lightblue = (173, 216, 230)
 lightgreen = (144,238,144)
+green = (0,128,0)
+
 
 y_shift = 0
 x = pygame.init()
@@ -70,7 +71,50 @@ class edge(object):
             self.y_lower_bound = self.y_cor + border_size
             self.y_upper_bound = self.y_cor + border_size + cell_size
 
+class button(object):
+    def __init__(self,id,inactive_color,active_color,x_pos,y_pos,width,height,value):
+        self.id = id
+        self.inactive_color = inactive_color
+        self.active_color = active_color
+        self.isActive = False
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.width = width
+        self.height = height
+        self.value = value
+        if self.isActive == True:
+            self.color = self.active_color
+        else:
+            self.color = self.inactive_color
+        self.x_lower_bound = self.x_pos
+        self.x_upper_bound = self.x_pos + self.width
+        self.y_lower_bound = self.y_pos
+        self.y_upper_bound = self.y_pos + self.height
+    def hover(self):
+        self.isActive = True
+    def nothover(self):
+        self.isActive = False
+    def updateButton(self):
+        global win
+        if self.isActive == True:
+            self.color = self.active_color
+        else:
+            self.color = self.inactive_color
+        pygame.draw.rect(win,self.color,[self.x_pos,self.y_pos,self.width,self.height])
+        button_font = pygame.font.SysFont(None,25)
+        button_text_surface = button_font.render(self.value,True,black)
+        #print(button_text_surface.get_rect()[3])
+        botton_rect = button_text_surface.get_rect()
+
+        win.blit(button_text_surface,[self.x_pos+(self.width//2)-(botton_rect.width//2) , self.y_pos+(self.height//2)-(botton_rect.height//2)])
+        pygame.display.update()
+
+
 ##
+
+
+
+
 # Making user defined pygame_functions
 
 def draw_edge(position, type):
@@ -148,6 +192,24 @@ def draw_edge(position, type):
 
 
 ##
+
+# Saving existing drawn mapfile
+
+def saveMap():
+    mapfile = open("mapfile/map.pickle" , "wb")
+    pickle_data = []
+    pickle_data.append(iidlist)
+    pickle_data.append(cells)
+    pickle_data.append(edges)
+
+    pickle.dump(pickle_data,mapfile)
+    mapfile.close()
+
+
+
+
+##
+
 '''
 cells = np.zeros((grid_size,grid_size) , dtype = int)
 print(cells)
@@ -198,30 +260,42 @@ pygame.display.update()
 
 
 
-# Drawing edges from default.pickle
-drawdefault = True
+# Drawing edges from default.pickle if map.pickle is not available
+drawmap = True
 try:
-    defaulthandle = open("mapfile/default.pickle" , "rb")
-    #print("reading default")
+    maphandle = open("mapfile/map.pickle" , "rb")
 except:
-    print("Default pickle file not found.")
-    drawdefault = False
+    drawmap = False
+    drawdefault = True
+    try:
+        defaulthandle = open("mapfile/default.pickle" , "rb")
+        #print("reading default")
+    except:
+        print("Default pickle file not found.")
+        drawdefault = False
+if drawmap:
+    handle = maphandle
+elif drawdefault:
+    handle = defaulthandle
+else:
+    print("No Map Available")
 
-if drawdefault:
-    #print("Drawing Default")
-    default_data = pickle.load(defaulthandle)
-    iidlist =  default_data[0]
-    cells = default_data[1]
-    edges = default_data[2]
-    for defaultids in default_data[0]:
-        default_edge_info = default_data[2][defaultids]
-        for each_default_edge in default_edge_info:
-            if each_default_edge.color == black:
-                #print("punch")
-                pygame.draw.rect(win,each_default_edge.color,[each_default_edge.x_cor,each_default_edge.y_cor,each_default_edge.width,each_default_edge.height])
+if drawmap or drawdefault:
+    data = pickle.load(handle)
+    iidlist =  data[0]
+    cells = data[1]
+    edges = data[2]
+    for defaultids in data[0]:
+        edge_info = data[2][defaultids]
+        for each_edge in edge_info:
+            if each_edge.color == black:
+                pygame.draw.rect(win,each_edge.color,[each_edge.x_cor,each_edge.y_cor,each_edge.width,each_edge.height])
                 pygame.display.update()
-
+if drawmap:
+    maphandle.close()
+elif drawdefault:
     defaulthandle.close()
+
 
 ##
 # wordbox = makeTextBox(display_width - dashboardsize, display_height/2,dashboardsize)
@@ -230,7 +304,8 @@ if drawdefault:
 
 
 # Simulation Loop
-
+saveButton = button("saveButton" , lightgreen, green , display_width-dashboardsize, margin , dashboardsize-margin , 30 , "Save")
+saveButton.updateButton()
 while not gameExit:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -240,12 +315,27 @@ while not gameExit:
                 gameExit = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
-                draw_edge (event.pos,1)
+                if saveButton.isActive:
+                    pass
+                    saveMap()
+                else:
+                    draw_edge (event.pos,1)
             if event.button == 3:
                 draw_edge (event.pos,3)
+        if event.type == pygame.MOUSEMOTION:
+            mospos = event.pos
+            mospos_x = mospos[0]
+            mospos_y = mospos[1]
+            if mospos_x >= saveButton.x_lower_bound and mospos_x <= saveButton.x_upper_bound and mospos_y >= saveButton.y_lower_bound and mospos_y <= saveButton.y_upper_bound:
+                saveButton.hover()
+                saveButton.updateButton()
+            else:
+                saveButton.nothover()
+                saveButton.updateButton()
     # wordbox = makeTextBox(display_width - dashboardsize, display_height/2,dashboardsize)
     # showTextBox(wordbox)
     # entry = textBoxInput(wordbox)
+
 
 
 
