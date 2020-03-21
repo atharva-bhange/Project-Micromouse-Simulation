@@ -1,15 +1,17 @@
 import pygame
+from pygame import *
 import time
-import numpy as np
-import json
+#import numpy as np
+#import json
 import pickle
-
+red = (255,0,0)
 white = (255,255,255)
 black = (0,0,0)
 lightblue = (173, 216, 230)
 lightgreen = (144,238,144)
 green = (0,128,0)
 
+is_saved = True
 
 y_shift = 0
 x = pygame.init()
@@ -21,10 +23,18 @@ grid_size = 16
 cell_size = 35
 dashboardsize = 300
 
+
+
+
 border_size = 6
 
-display_width = 641+cell_size+border_size+dashboardsize
+display_width = 641+cell_size+border_size+margin+dashboardsize
 display_height = 641+cell_size+border_size
+
+notif_width = 300
+notif_height = 50
+notif_x_pos = display_width - notif_width-margin
+notif_y_pos = display_height - margin - notif_height
 
 
 win = pygame.display.set_mode((display_width,display_height))
@@ -103,21 +113,16 @@ class button(object):
         pygame.draw.rect(win,self.color,[self.x_pos,self.y_pos,self.width,self.height])
         button_font = pygame.font.SysFont(None,25)
         button_text_surface = button_font.render(self.value,True,black)
-        #print(button_text_surface.get_rect()[3])
         botton_rect = button_text_surface.get_rect()
-
         win.blit(button_text_surface,[self.x_pos+(self.width//2)-(botton_rect.width//2) , self.y_pos+(self.height//2)-(botton_rect.height//2)])
         pygame.display.update()
 
 
 ##
-
-
-
-
 # Making user defined pygame_functions
 
 def draw_edge(position, type):
+    global is_saved
     #global fhand
     mousedown = True
     pos = position
@@ -128,8 +133,12 @@ def draw_edge(position, type):
         for event in pygame.event.get():
             #print(event)
             if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+                if is_saved:
+                    pygame.quit()
+                    quit()
+                else:
+                    notification("Changes Not Saved!" , red,red)
+                    is_saved = True
             # if event.type == pygame.ACTIVEEVENT:
             #     if event.gain == 0 :
             #         postoggle = False
@@ -173,6 +182,7 @@ def draw_edge(position, type):
                         ed.color = black
                         pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
                         pygame.display.update()
+                        is_saved = False
         elif buttontype == 3:
             x_pos = pos[0]
             y_pos = pos[1]
@@ -186,16 +196,14 @@ def draw_edge(position, type):
                         ed.color = lightgreen
                         pygame.draw.rect(win,ed.color,[ed.x_cor,ed.y_cor,ed.width,ed.height])
                         pygame.display.update()
-
-
-
-
+                        is_saved = False
 
 ##
 
 # Saving existing drawn mapfile
 
 def saveMap():
+    global is_saved
     mapfile = open("mapfile/map.pickle" , "wb")
     pickle_data = []
     pickle_data.append(iidlist)
@@ -204,9 +212,94 @@ def saveMap():
 
     pickle.dump(pickle_data,mapfile)
     mapfile.close()
+    notification("File Saved",black,green)
+    is_saved = True
+##
 
+#Function for rounded rectangle
+def RoundedRect(surface,rect,color,radius=0.4):
 
+    """
+    AAfilledRoundedRect(surface,rect,color,radius=0.4)
 
+    surface : destination
+    rect    : rectangle
+    color   : rgb or rgba
+    radius  : 0 <= radius <= 1
+    """
+
+    rect         = Rect(rect)
+    color        = Color(*color)
+    alpha        = color.a
+    color.a      = 0
+    pos          = rect.topleft
+    rect.topleft = 0,0
+    rectangle    = Surface(rect.size,SRCALPHA)
+
+    circle       = Surface([min(rect.size)*3]*2,SRCALPHA)
+    draw.ellipse(circle,(0,0,0),circle.get_rect(),0)
+    circle       = transform.smoothscale(circle,[int(min(rect.size)*radius)]*2)
+
+    radius              = rectangle.blit(circle,(0,0))
+    radius.bottomright  = rect.bottomright
+    rectangle.blit(circle,radius)
+    radius.topright     = rect.topright
+    rectangle.blit(circle,radius)
+    radius.bottomleft   = rect.bottomleft
+    rectangle.blit(circle,radius)
+
+    rectangle.fill((0,0,0),rect.inflate(-radius.w,0))
+    rectangle.fill((0,0,0),rect.inflate(0,-radius.h))
+
+    rectangle.fill(color,special_flags=BLEND_RGBA_MAX)
+    rectangle.fill((255,255,255,alpha),special_flags=BLEND_RGBA_MIN)
+
+    return surface.blit(rectangle,pos)
+
+##
+# get seconds time
+def get_seconds():
+    return time.localtime().tm_sec
+##
+
+end_time = None
+notif_state = False
+# Function for notification
+
+def notification(msg , msg_color , bg_color):
+    global notif_state
+    global end_time
+    global win
+    global notif_height
+    global notif_width
+    global notif_x_pos
+    global notif_y_pos
+
+    RoundedRect(win,(notif_x_pos,notif_y_pos,notif_width,notif_height),bg_color , radius = 0.4)
+    RoundedRect(win,(notif_x_pos+10,notif_y_pos+10,notif_width-20,notif_height-20),white , radius = 0.2)
+    notif_text_x_pos = notif_x_pos+10
+    notif_text_y_pos = notif_y_pos+10
+    notif_text_width = notif_width-20
+    notif_text_height = notif_height-20
+    notification_font = pygame.font.SysFont(None,25)
+    notification_text_surface = notification_font.render(msg,True,msg_color)
+    notification_text_rect = notification_text_surface.get_rect()
+    win.blit(notification_text_surface,[notif_text_x_pos+(notif_text_width//2) -(notification_text_rect.width//2),notif_text_y_pos+(notif_text_height//2) -(notification_text_rect.height//2)])
+    pygame.display.update()
+    end_time = get_seconds() + 3
+
+# notification erase functionality
+def erase_notification():
+    global white
+    global end_time
+    global win
+    global notif_height
+    global notif_width
+    global notif_x_pos
+    global notif_y_pos
+    win.fill(white,(notif_x_pos,notif_y_pos,notif_width,notif_height))
+    pygame.display.update()
+##
 
 ##
 
@@ -307,12 +400,22 @@ elif drawdefault:
 saveButton = button("saveButton" , lightgreen, green , display_width-dashboardsize, margin , dashboardsize-margin , 30 , "Save")
 saveButton.updateButton()
 while not gameExit:
+    if get_seconds() == end_time:
+        erase_notification()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            gameExit = True
+            if is_saved:
+                gameExit = True
+            else:
+                notification("Changes Not Saved!" , red,red)
+                is_saved = True
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                gameExit = True
+                if is_saved:
+                    gameExit = True
+                else:
+                    notification("Changes Not Saved!" , red,red)
+                    is_saved = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 if saveButton.isActive:
@@ -332,6 +435,8 @@ while not gameExit:
             else:
                 saveButton.nothover()
                 saveButton.updateButton()
+
+
     # wordbox = makeTextBox(display_width - dashboardsize, display_height/2,dashboardsize)
     # showTextBox(wordbox)
     # entry = textBoxInput(wordbox)
