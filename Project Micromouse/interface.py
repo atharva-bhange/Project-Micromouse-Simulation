@@ -1,9 +1,11 @@
 import pygame
 from pygame import *
 import time
+import numpy as np
 #import numpy as np
 #import json
 import pickle
+
 red = (255,0,0)
 white = (255,255,255)
 black = (0,0,0)
@@ -11,7 +13,18 @@ lightblue = (173, 216, 230)
 lightgreen = (144,238,144)
 green = (0,128,0)
 
+x_mid = [7 , 7 , 8 , 8]
+y_mid = [7 , 8 , 7 , 8]
+
+
+
+isValid = True
+
 is_saved = True
+
+edges = dict()
+cells = []
+iidlist = []
 
 y_shift = 0
 x = pygame.init()
@@ -23,13 +36,12 @@ grid_size = 16
 cell_size = 35
 dashboardsize = 300
 
-
-
-
 border_size = 6
 
 display_width = 641+cell_size+border_size+margin+dashboardsize
 display_height = 641+cell_size+border_size
+
+arr = np.zeros([grid_size , grid_size] , int)
 
 notif_width = 300
 notif_height = 50
@@ -48,8 +60,19 @@ gameExit = False
 
 # Making cell class and edge class
 
+'''
+   _____ _
+  / ____| |
+ | |    | | __ _ ___ ___  ___  ___
+ | |    | |/ _` / __/ __|/ _ \/ __|
+ | |____| | (_| \__ \__ \  __/\__ \
+  \_____|_|\__,_|___/___/\___||___/
+
+
+'''
+
 class cell(object):
-    def __init__(self,id,x_cor,y_cor,width = cell_size,height = cell_size ,color = lightblue ):
+    def __init__(self,id,x_cor,y_cor,width = cell_size,height = cell_size ,color = lightblue , ):
         self.id = id
         self.x_cor = x_cor
         self.y_cor = y_cor
@@ -117,8 +140,19 @@ class button(object):
         win.blit(button_text_surface,[self.x_pos+(self.width//2)-(botton_rect.width//2) , self.y_pos+(self.height//2)-(botton_rect.height//2)])
         pygame.display.update()
 
-
 ##
+
+'''
+
+  ______                _   _
+ |  ____|              | | (_)
+ | |__ _   _ _ __   ___| |_ _  ___  _ __  ___
+ |  __| | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+ | |  | |_| | | | | (__| |_| | (_) | | | \__ \
+ |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+
+
+'''
 # Making user defined pygame_functions
 
 def draw_edge(position, type):
@@ -301,6 +335,48 @@ def erase_notification():
     pygame.display.update()
 ##
 
+# funcyion to change colour of cells
+
+def changeCellcolor(cellid , color):
+    global win
+    global cells
+    ls = cellid.split("-")
+    i = int(ls[0])
+    j= int(ls[1])
+    cellObject = cells[i][j]
+    print(type(cellObject))
+    cellObject.color = color
+
+    pygame.draw.rect(win ,cellObject.color ,[cellObject.x_cor , cellObject.y_cor , cellObject.width , cellObject.height])
+    pygame.display.update()
+    is_saved = False
+
+##
+#Function to print number in cell
+
+def printCell(cellid , num , color , update = True):
+    global win
+    global cells
+    ls = cellid.split("-")
+    i = int(ls[0])
+    j = int(ls[1])
+    cellObject = cells[i][j]
+    pygame.draw.rect(win ,cellObject.color ,[cellObject.x_cor , cellObject.y_cor , cellObject.width , cellObject.height])
+    pygame.display.update()
+    print_font = pygame.font.SysFont(None,25)
+    print_text_surface = print_font.render(str(num) , True, color)
+    print_text_rect = print_text_surface.get_rect()
+    print_text_x_pos = cellObject.x_cor
+    print_text_y_pos = cellObject.y_cor
+    print_text_width = cellObject.width
+    print_text_height = cellObject.height
+    win.blit(print_text_surface,[print_text_x_pos+(print_text_width//2) -(print_text_rect.width//2),print_text_y_pos+(print_text_height//2) -(print_text_rect.height//2)])
+    if update:
+        pygame.display.update()
+    is_saved = False
+
+
+##
 ##
 
 '''
@@ -309,11 +385,10 @@ print(cells)
 '''
 # Drawing boilerplate/ blank maze
 win.fill(white)
-edges = dict()
+
 #chart = ['up','right','down','left']
 #state = {"up" : "H" , "down" : "H" , "left" : "V" , "right" : "V"}
-cells = []
-iidlist = []
+
 #fhand = open("log.txt", 'w')
 
 cursory = margin
@@ -389,16 +464,47 @@ if drawmap:
 elif drawdefault:
     defaulthandle.close()
 
-
 ##
-# wordbox = makeTextBox(display_width - dashboardsize, display_height/2,dashboardsize)
-# showTextBox(wordbox)
-# entry = textBoxInput(wordbox)
+#Making an emtyp maze array  and calculating distances from goal
 
+for i in range(grid_size):
+    for j in range(grid_size):
+        isValid = True
+        for t in range(4):
+            if i == x_mid[t] and j == y_mid[t]:
+                isValid = False
+                break
+        if not isValid:
+            continue
+        # Assigning code goes here
+        dis_list = []
+        for l in range(4):
+            virtual_x = x_mid[l]
+            virtual_y = y_mid[l]
+            dis = abs(virtual_x - i)+abs(virtual_y - j)
+            dis_list.append(dis)
+        min_dis = min(dis_list)
+        printCell(str(i)+"-"+str(j) , min(dis_list) , black , update = False)
+        arr[i][j] = min_dis
+
+    if not isValid:
+        continue
+
+for t in range(4):
+    i = t
+    j = t
+    printCell(str(x_mid[i])+"-"+str(y_mid[j]) , str(arr[x_mid[i]][y_mid[j]]) , black )
+
+pygame.display.update()
+##
+#changeCellcolor("7-7" , lightblue)
+#printCell("7-7" , 66,black)
 
 # Simulation Loop
 saveButton = button("saveButton" , lightgreen, green , display_width-dashboardsize, margin , dashboardsize-margin , 30 , "Save")
 saveButton.updateButton()
+
+
 while not gameExit:
     if get_seconds() == end_time:
         erase_notification()
