@@ -73,7 +73,6 @@ elif drawdefault:
 
 ##
 #Making an emtyp maze array  and calculating distances from goal
-
 for i in range(grid_size):
     for j in range(grid_size):
         isValid = True
@@ -93,17 +92,15 @@ for i in range(grid_size):
         min_dis = min(dis_list)
         printCell(str(i)+"-"+str(j) , min(dis_list) , black , update = False)
         arr[i][j] = min_dis
-
     if not isValid:
         continue
-
 for t in range(4):
     i = t
     j = t
     printCell(str(x_mid[i])+"-"+str(y_mid[j]) , str(arr[x_mid[i]][y_mid[j]]) , black )
-
 pygame.display.update()
 ##
+
 
 # Simulation Loop
 saveButton = button("saveButton" , lightgreen, green , display_width-dashboardsize, margin , dashboardsize-margin , 30 , "Save")
@@ -127,6 +124,8 @@ while not gameExit:
                 else:
                     notification("Changes Not Saved!" , red,red)
                     is_saved = True
+            if event.key == pygame.K_b:
+                initiatBot(mospos)
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 if saveButton.isActive:

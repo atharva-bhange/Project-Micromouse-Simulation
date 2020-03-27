@@ -49,3 +49,10 @@ robot_source = pygame.image.load("img/bot_transparent.png")
 gameExit = False
 
 win = pygame.display.set_mode((display_width,display_height))
+
+bot_initiation = False
+bot_initiation_cell_i  = None
+bot_initiation_cell_j  = None
+
+allowed_bot_cell_i = [0,0,grid_size-1,grid_size-1]
+allowed_bot_cell_j = [0,grid_size-1,0,grid_size-1]

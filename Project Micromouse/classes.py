@@ -24,6 +24,13 @@ class cell(object):
         self.width = width
         self.height = height
         self.color = color
+        split_id = self.id.split("-")
+        self.i = int(split_id[0])
+        self.j = int(split_id[1])
+        self.x_lower_bound = self.x_cor
+        self.x_upper_bound = self.x_cor + cell_size
+        self.y_lower_bound = self.y_cor
+        self.y_upper_bound = self.y_cor + cell_size
 
 class edge(object):
     def __init__(self,pos, x_cor,y_cor,state,color = lightgreen):
@@ -103,7 +110,21 @@ class robot(object):
         self.height = cell_size
         self.source = source
         self.facing = facing
-        self.display = win.blit(self.source, [self.x_cor,self.y_cor,self.width, self.height])
+        if facing == 'up':
+            self.display = win.blit(self.source, [self.x_cor,self.y_cor,self.width, self.height])
+        else:
+            old_facing = 'up'
+            new_facing = self.facing
+            if (old_facing == "up" and new_facing == "left") or (old_facing == "left" and new_facing == "down") or (old_facing == "down" and new_facing == "right") or (old_facing == "right" and new_facing =="up"):
+                # rotate anticlockwise 90 deg
+                rotate = pygame.transform.rotate(self.source , 90.0)
+            elif (old_facing == "up" and new_facing == "right") or (old_facing == "right" and new_facing == "down") or (old_facing == "down" and new_facing == "left") or (old_facing == "left" and new_facing =="up"):
+                # rotate clockwise 90 deg
+                rotate = pygame.transform.rotate(self.source , -90.0)
+            else:
+                # rotate 180 deg clockwise
+                rotate = pygame.transform.rotate(self.source , -180.0)
+            win.blit(rotate, [self.x_cor,self.y_cor,self.width, self.height])
     def moveTocell(self,new_i , new_j):
         self.i = new_i
         self.j = new_j
@@ -121,7 +142,5 @@ class robot(object):
             rotate = pygame.transform.rotate(self.source , -90.0)
         else:
             # rotate 180 deg clockwise
-            print("180")
             rotate = pygame.transform.rotate(self.source , -180.0)
         win.blit(rotate, [self.x_cor,self.y_cor,self.width, self.height])
-        pygame.display.update()

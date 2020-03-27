@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pickle
 from constants import *
+from classes import *
 '''
   ______                _   _
  |  ____|              | | (_)
@@ -233,3 +234,50 @@ def printCell(cellid , num , color , update = True):
     if update:
         pygame.display.update()
     is_saved = False
+
+#
+
+## Making a function for initiate bot at start location
+def initiatBot(pos):
+    global bot_initiation
+    global bot_initiation_cell_i
+    global bot_initiation_cell_j
+    global cells
+    global win
+    global black
+    global arr
+    x_pos = pos[0]
+    y_pos = pos[1]
+    for tab in range(4):
+        cell_object = cells[allowed_bot_cell_i[tab]][allowed_bot_cell_j[tab]]
+        if cell_object.x_lower_bound < x_pos and x_pos < cell_object.x_upper_bound and cell_object.y_lower_bound < y_pos and y_pos < cell_object.y_upper_bound:
+            if bot_initiation:
+                # colour old cell to set colour
+                pygame.draw.rect(win ,cells[bot_initiation_cell_i][bot_initiation_cell_j].color ,[cells[bot_initiation_cell_i][bot_initiation_cell_j].x_cor , cells[bot_initiation_cell_i][bot_initiation_cell_j].y_cor , cells[bot_initiation_cell_i][bot_initiation_cell_j].width , cells[bot_initiation_cell_i][bot_initiation_cell_j].height])
+                # set the old number
+                str_id = str(bot_initiation_cell_i)+"-"+str(bot_initiation_cell_j)
+                printCell(str_id , arr[bot_initiation_cell_i,bot_initiation_cell_j] , black)
+                # draw on the new cell
+                if tab == 0 or tab == 1:
+                    bot = robot(cell_object.id , robot_source ,facing = "down")
+                    bot_initiation = True
+                    bot_initiation_cell_i = int(cell_object.id.split('-')[0])
+                    bot_initiation_cell_j = int(cell_object.id.split('-')[1])
+                else:
+                    bot = robot(cell_object.id , robot_source ,facing = "up")
+                    bot_initiation = True
+                    bot_initiation_cell_i = int(cell_object.id.split('-')[0])
+                    bot_initiation_cell_j = int(cell_object.id.split('-')[1])
+                pygame.display.update()
+            else:
+                if tab == 0 or tab == 1:
+                    bot = robot(cell_object.id , robot_source ,facing = "down")
+                    bot_initiation = True
+                    bot_initiation_cell_i = int(cell_object.id.split('-')[0])
+                    bot_initiation_cell_j = int(cell_object.id.split('-')[1])
+                else:
+                    bot = robot(cell_object.id , robot_source ,facing = "up")
+                    bot_initiation = True
+                    bot_initiation_cell_i = int(cell_object.id.split('-')[0])
+                    bot_initiation_cell_j = int(cell_object.id.split('-')[1])
+                pygame.display.update()

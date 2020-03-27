@@ -31,5 +31,3 @@ for i in range(grid_size):
 
     if not isValid:
         continue
-
-print(arr)
