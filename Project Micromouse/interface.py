@@ -102,6 +102,8 @@ pygame.display.update()
 ##
 
 
+
+
 # Simulation Loop
 saveButton = button("saveButton" , lightgreen, green , display_width-dashboardsize, margin , dashboardsize-margin , 30 , "Save")
 saveButton.updateButton()
@@ -126,6 +128,8 @@ while not gameExit:
                     is_saved = True
             if event.key == pygame.K_b:
                 initiatBot(mospos)
+            if event.key == pygame.K_g:
+                setGoal(mospos)
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 if saveButton.isActive:

@@ -281,3 +281,64 @@ def initiatBot(pos):
                     bot_initiation_cell_i = int(cell_object.id.split('-')[0])
                     bot_initiation_cell_j = int(cell_object.id.split('-')[1])
                 pygame.display.update()
+
+def setGoal(pos):
+    global cells
+    global grid_size
+    global x_mid
+    global y_mid
+    x_pos = pos[0]
+    y_pos = pos[1]
+    kill = False
+    for i in range(grid_size):
+        for j in range(grid_size):
+            cell_object = cells[i][j]
+            if cell_object.x_lower_bound < x_pos and x_pos < cell_object.x_upper_bound and cell_object.y_lower_bound < y_pos and y_pos < cell_object.y_upper_bound:
+                cell_root_i = cell_object.i
+                cell_root_j = cell_object.j
+                if cell_root_i+1> grid_size-1 or cell_root_j+1 > grid_size-1:
+                    kill = True
+                    break
+                # we have got a proper root cell if code execution is at this point
+                x_mid = [i , i , i+1 , i+1]
+                y_mid = [j , j+1 , j , j+1]
+                refreshNumbering(x_mid , y_mid)
+        if kill:
+            break
+
+def refreshNumbering(new_x_mid , new_y_mid):
+    global grid_size
+    global win
+    global cells
+    global arr
+    for i in range(grid_size):
+        for j in range(grid_size):
+            cell_object = cells[i][j]
+            pygame.draw.rect(win ,cell_object.color ,[cell_object.x_cor , cell_object.y_cor , cell_object.width , cell_object.height])
+    for i in range(grid_size):
+        for j in range(grid_size):
+            isValid = True
+            for t in range(4):
+                if i == new_x_mid[t] and j == new_y_mid[t]:
+                    isValid = False
+                    arr[i][j] = 0
+                    break
+            if not isValid:
+                continue
+            # Assigning code goes here
+            dis_list = []
+            for l in range(4):
+                virtual_x = new_x_mid[l]
+                virtual_y = new_y_mid[l]
+                dis = abs(virtual_x - i)+abs(virtual_y - j)
+                dis_list.append(dis)
+            min_dis = min(dis_list)
+            printCell(str(i)+"-"+str(j) , min(dis_list) , black , update = False)
+            arr[i][j] = min_dis
+        if not isValid:
+            continue
+    for t in range(4):
+        i = t
+        j = t
+        printCell(str(new_x_mid[i])+"-"+str(new_y_mid[j]) , str(arr[new_x_mid[i]][new_y_mid[j]]) , black )
+    pygame.display.update()
